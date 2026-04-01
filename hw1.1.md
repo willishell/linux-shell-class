@@ -72,11 +72,12 @@ Rules:
 
 Students MUST follow:
 
-1. File name: `script.sh`
-2. Must run as:
-   `bash script.sh < input.txt`
-3. Must:
+1. File names: `task1.sh`, `task2.sh`, `task3.sh`, `task4.sh`, `task5.sh`
+2. Each task must be a separate executable script.
+3. Must run as:
+   `bash taskN.sh < input.txt`
+4. Must:
    - read from stdin
    - write to stdout
-4. NO interactive input
-5. NO hardcoded answers
+5. NO interactive input
+6. NO hardcoded answers

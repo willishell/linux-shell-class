@@ -1,56 +1,47 @@
-在自己账户目录下创建子目录hw1，所有bash脚本文件都放在这个目录下，文件扩展名是.sh，假如文件名是main.sh，这时文件的路径应该是： \~/hw1/main.sh （‘~'表示你的账户所在更目录，如pi账户，那么完整路径就是/home/pi/hw1/main.sh。脚本文件需要运行没有错误，即脚本运行后的返回值是0.
+Log in to the Raspberry Pi system with your own account and change your password. The username is your student ID, and the initial password is 123. You can use any SSH client such as MobaXterm, XShell, or PuTTY, or use the command line:
 
-请把下面的指令放入脚本文件中，并能够运行返回0值。
+`ssh student_id@150.158.24.225 -p 6001`
 
-# The basics of Linux Shell
+Under your home directory (`~`), create a `labs` directory if it doesn't exist, and then create `lab1` inside `labs` as your lab directory for this assignment:
 
-Part 1: Navigate the file system
-- Create a directory `foo` via `mkdir foo` command
+`mkdir -p ~/labs/lab1`
 
-- `cd` into the `foo` directory
+All files to be checked for this lab must be placed in `~/labs/lab1`, and file names should start with `lab1_`, such as `lab1_1.sh`. Example path: `~/labs/lab1/lab1_1.sh`.
 
-Part 2: Create a file with `touch`
-- Create a file using `touch newfile.txt`
+The following tasks are designed based on the latter part of Chapter 2 (advanced Linux commands, processes, permissions, and system information):
 
-Run the command again? What happens?
+1. Write `lab1_1.sh` to demonstrate process management:
+   - List all processes (`ps aux`)
+   - Show top processes (`top -n 1 -b`)
+   - Kill a background process (e.g., start `sleep 100 &`, then kill it with `kill`)
 
-Part 3: Remove files and directories
-- Remove the directory `foo` via the command `rm -rf foo`
+2. Create `lab1_2.sh` to work with environment variables:
+   - Display current environment variables (`env`)
+   - Set a new variable and echo it (`export MY_VAR="Hello"; echo $MY_VAR`)
+   - Show PATH variable (`echo $PATH`)
 
-Make a file and then delete it: `touch bar.txt` then run `rm bar.txt`
+3. Write `lab1_3.sh` to demonstrate user and group information:
+   - Show current user (`whoami`)
+   - Show user ID and groups (`id`)
+   - List all users (`cat /etc/passwd | head -10`)
 
-Part 4: List files
-- list the contents of `/usr/bin` by running the command `ls -l /usr/bin`
+4. Create `lab1_4.sh` for advanced permissions:
+   - Create a file and set permissions (`touch perm_file.txt; chmod 755 perm_file.txt`)
+   - Change ownership (if possible, `sudo chown root perm_file.txt`)
+   - Check permissions (`ls -l perm_file.txt`)
 
-# Practicing Common Shell Piping Operations
+5. Write `lab1_5.sh` to demonstrate file searching:
+   - Find files by name (`find /usr -name "*.txt" 2>/dev/null | head -5`)
+   - Grep for text in files (`grep -r "Linux" /etc/passwd`)
 
-Part 1: Count the files and directories in `/usr/bin`
-- Pipe the output of `ls -l /usr/bin | wc -l` to count the files and directories in `/usr/bin`
+6. Create `lab1_6.sh` for archiving and compression:
+   - Create a tar archive (`tar -cvf archive.tar ~/labs/lab1`)
+   - Compress it (`gzip archive.tar`)
+   - List contents (`tar -tzf archive.tar.gz`)
 
-How many did you count?
+Submission requirements:
 
-Part 2: Create a new file with `echo a`
-- Run the following command "`echo 'hi'`"
-
-Pipe this to a file by using "`echo 'hi' > hello.txt`"
-
-Now run `ls` to verify it exists
-
-- count the words in the file `cat hello.txt | wc -w`
-
-How many did you count?
-
-# Learn to work with streams
-
-Part 1: Create a new file and write to it via stdout
-- Run the following command in your Bash terminal: `echo "fruit" > meal.txt`
-
-Part 2: Append new data to the file by using stdout
-- Run the following command in your Bash terminal: `echo "chocolate" >> meal.txt`
-
-Part 3: Redirect standard input
-- Use the tr command to substitute characters by reading standard input: `tr fruit steak < meal.txt`
-
-Part 4: Throwaway stdout to /dev/null
-- Send the output of standard out to /dev/null via `cat meal.txt > /dev/null`
+1. Submission directory: `~/labs/lab1`.
+2. All scripts must include readable comments and be directly executable.
+3. Submit all script files and a short report named `lab1_report.txt`, including key commands and execution results for each task.
 
