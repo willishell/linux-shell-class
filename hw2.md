@@ -78,7 +78,11 @@ You MUST follow all rules below:
 
 #### Input:
 
-Each line contains a device path (e.g., `/dev/null`).
+Multiple lines, each containing a device path:
+
+/dev/null
+/dev/sda
+/dev/tty
 
 #### Task:
 
@@ -106,12 +110,16 @@ c null
 
 #### Input:
 
-A directory path (e.g., `/sys/block`)
+A directory path:
+
+/sys/block
 
 #### Task:
 
-* List all entries in the directory
-* Output only device names
+List all entries in the directory
+Output must be:
+sorted alphabetically
+one per line
 
 ---
 
@@ -119,7 +127,9 @@ A directory path (e.g., `/sys/block`)
 
 #### Input:
 
-Each line contains a device name (e.g., `sda`)
+A device name:
+
+sda
 
 #### Task:
 
@@ -140,7 +150,9 @@ Each line contains a device name (e.g., `sda`)
 
 #### Input:
 
-Each line contains a device path (e.g., `/dev/sda`)
+Device paths:
+
+/dev/sda
 
 #### Task:
 
@@ -157,7 +169,7 @@ Each line contains a device path (e.g., `/dev/sda`)
 #### Output:
 
 ```
-/dev/sda disk
+<devicename> <devicetype>
 ```
 
 ---
@@ -166,22 +178,19 @@ Each line contains a device path (e.g., `/dev/sda`)
 
 #### Input:
 
-A filename (e.g., `output.bin`)
+output.bin
 
 #### Task:
 
-* Use `dd` to:
+* Create a file(output.bin) using:
+  * input: /dev/zero
+  * size: 1 KB
+* After creation, output:
+  * the size of the ourput.bin
 
-  * Read from `/dev/zero`
-  * Write 1KB to the file
-
-#### Output:
-
-```
-OK
-```
-
-⚠️ Do NOT write to any real device!
+#### Requirement
+* Output must reflect actual file size
+* Hardcoded output will fail grading
 
 ---
 
@@ -190,7 +199,7 @@ OK
 #### Input:
 
 ```
-<input_file> <output_file>
+input.txt output.txt
 ```
 
 #### Task:
@@ -209,7 +218,7 @@ OK
 
 #### Input:
 
-A prefix (e.g., `/dev`)
+A prefix:/dev
 
 #### Task:
 
@@ -225,12 +234,10 @@ A prefix (e.g., `/dev`)
 
 ---
 
-## 📤 Output Rules (STRICT)
-
-* No extra spaces
-* No extra lines
-* No prompts or explanations
-* Exact formatting required
+## Requirement
+* Output must be:
+  * sorted
+  * unique
 
 ---
 
@@ -283,9 +290,3 @@ task7.sh
 Good luck!
 
 ---
-
-If you want, I can next generate:
-
-* ✅ **Student hint version (less strict)**
-* ✅ **TA solution guide (with explanations)**
-* ✅ **Common mistakes checklist (very useful for grading)**
