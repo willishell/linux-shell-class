@@ -1,5 +1,6 @@
 #!/bin/bash
-while read dev; do
+while IFS= read -r dev || [ -n "$dev" ]; do
+    dev=${dev//$'\r'/}
     [ -e "$dev" ] || continue
     type=$(stat -c "%F" "$dev")
     name=$(basename "$dev")
