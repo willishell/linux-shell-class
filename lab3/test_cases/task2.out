@@ -1,2 +1,2 @@
-loop0 squashfs
 sda1 ext4
+sda2 ext4
