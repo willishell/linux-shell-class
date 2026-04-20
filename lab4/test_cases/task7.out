@@ -1,0 +1,2 @@
+cd / && run-parts --report /etc/cron.hourly
+test -x /usr/sbin/anacron || run-parts --report /etc/cron.weekly

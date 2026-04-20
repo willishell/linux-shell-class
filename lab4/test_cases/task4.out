@@ -1,0 +1,4 @@
+root login
+daemon no-login
+nobody no-login
+ghost NOTFOUND

@@ -66,8 +66,14 @@ You MUST follow all rules below:
 
    * Use interactive input
    * Hardcode answers
-   * Print extra text (no prompts, no debug logs)
+   * Print extr6 text (no prompts, no debug logs)
 
+6. Output Formatting (STRICT)
+
+   * No extra spaces
+   * No extra blank lines
+   * Exact format required
+   * Order matters where specified
 ---
 
 ## 📝 Assignment Tasks
@@ -246,7 +252,7 @@ A prefix:/dev
 You can test your script locally using:
 
 ```bash
-bash taskN.sh < testN.in
+bash taskN.sh < taskN.in
 ```
 
 ---
@@ -257,7 +263,8 @@ Your scripts will be automatically graded based on:
 
 * Correctness of output
 * Format compliance
-* Script robustness
+* Proper stdin usage
+* Script robustness(no hardcoding)
 
 Each task is evaluated independently.
 
@@ -287,6 +294,15 @@ task7.sh
 
 ---
 
-Good luck!
+## 🚀 Final Advice
+
+- Always read from stdin (`read` or `cat`)
+- Avoid assumptions about device names
+- Test with multiple inputs
+- Keep scripts simple and robust
+
+---
+
+Good luck and write clean scripts!
 
 ---

@@ -1,0 +1,4 @@
+root 0 0
+daemon 1 0
+nogroup 65534 0
+students NOTFOUND
