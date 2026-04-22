@@ -68,16 +68,22 @@ grade_lab() {
 
     source "$lab_dir/config.sh"
 
+    local timeout_value
+    if [ -n "${TIMEOUT:-}" ]; then
+        timeout_value="$TIMEOUT"
+    elif [ -n "${TIME_LIMIT:-}" ]; then
+        timeout_value="$TIME_LIMIT"
+    else
+        timeout_value=5
+    fi
+
     local teacher_dir="$lab_dir/submissions/teacher"
     if [ -d "$teacher_dir" ]; then
-        echo "Generating standard answers from teacher scripts if missing..."
+        echo "Generating standard answers from teacher scripts..."
         for task in "${TASKS[@]}"; do
             local teacher_script="$teacher_dir/$task.sh"
             local input_file="$lab_dir/test_cases/${task}.in"
             local expected_file="$lab_dir/test_cases/${task}.out"
-            if [ -f "$expected_file" ]; then
-                continue
-            fi
             if [ ! -f "$teacher_script" ]; then
                 echo "Warning: teacher script $teacher_script not found, skipping generation for $task." >&2
                 continue
@@ -88,15 +94,6 @@ grade_lab() {
             fi
             timeout "$timeout_value" bash "$teacher_script" < "$input_file" > "$expected_file" 2>/dev/null
         done
-    fi
-
-    local timeout_value
-    if [ -n "${TIMEOUT:-}" ]; then
-        timeout_value="$TIMEOUT"
-    elif [ -n "${TIME_LIMIT:-}" ]; then
-        timeout_value="$TIME_LIMIT"
-    else
-        timeout_value=5
     fi
 
     local is_weighted=0
@@ -124,6 +121,8 @@ grade_lab() {
         header+=",$task"
     done
     header+=",total,score"
+
+    echo "Grading student scripts..."
 
     for class_csv in "${csv_files[@]}"; do
         local class_name

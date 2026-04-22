@@ -50,6 +50,8 @@ for task in "${TASKS[@]}"; do
 done
 header+=",total,score"
 
+echo "Grading student scripts..."
+
 for class_csv in "$id_dir"/*.csv; do
     class_name=$(basename "$class_csv" .csv)
     results_file="$results_dir/lab${lab_number}_class${class_name}.csv"
