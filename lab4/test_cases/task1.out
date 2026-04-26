@@ -1,3 +1,0 @@
-journald yes
-rsyslog yes
-syslog-ng no
