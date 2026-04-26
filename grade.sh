@@ -6,10 +6,11 @@ cd "$root_dir"
 
 usage() {
     cat <<EOF
-Usage: $0 [lab_dir_or_name] [student_id_file.csv]
+Usage: $0 [-d|--debug-diff] [lab_dir_or_name] [student_id_file.csv]
 
 Grade labs from the project root without using lab2+/grade.sh scripts.
 - lab1 is not supported by this shared grader.
+- -d, --debug-diff prints a unified diff when student output differs from teacher output.
 - If lab_dir_or_name is provided, grades only that lab.
 - If student_id_file.csv is provided, uses only that CSV file.
 - If no id file is provided, uses all CSV files from id/.
@@ -20,6 +21,37 @@ EOF
 
 lab_arg=""
 selected_id_file=""
+debug_diff=0
+
+args=()
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -d|--debug-diff)
+            debug_diff=1
+            ;;
+        -h|--help)
+            usage
+            ;;
+        --)
+            shift
+            while [ "$#" -gt 0 ]; do
+                args+=("$1")
+                shift
+            done
+            break
+            ;;
+        -*)
+            echo "Error: unknown option '$1'." >&2
+            usage
+            ;;
+        *)
+            args+=("$1")
+            ;;
+    esac
+    shift
+done
+
+set -- "${args[@]}"
 
 if [ "$#" -gt 2 ]; then
     usage
@@ -65,8 +97,22 @@ build_diff_args() {
 compare_outputs() {
     local actual_file="$1"
     local expected_file="$2"
+    local mismatch_context="$3"
 
-    diff "${diff_args[@]}" "$actual_file" "$expected_file" >/dev/null
+    if diff "${diff_args[@]}" "$actual_file" "$expected_file" >/dev/null; then
+        return 0
+    fi
+
+    if [ "$debug_diff" -eq 1 ]; then
+        echo "Output mismatch: $mismatch_context" >&2
+        diff -u "${diff_args[@]}" \
+            --label "student output" \
+            --label "teacher output" \
+            "$actual_file" "$expected_file" >&2 || true
+        echo >&2
+    fi
+
+    return 1
 }
 
 run_script_with_input() {
@@ -198,7 +244,7 @@ grade_lab() {
                     expected_file="$lab_dir/test_cases/${task}.out"
                     if [ -f "$input_file" ] && [ -f "$expected_file" ]; then
                         output_file=$(mktemp)
-                        if run_script_with_input "$script" "$input_file" "$output_file" "$timeout_value" "$student_lab" && compare_outputs "$output_file" "$expected_file"; then
+                        if run_script_with_input "$script" "$input_file" "$output_file" "$timeout_value" "$student_lab" && compare_outputs "$output_file" "$expected_file" "$lab_name/$task student=$student_id"; then
                             task_score=1
                         fi
                         rm -f "$output_file"

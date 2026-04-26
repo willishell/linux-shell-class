@@ -30,6 +30,9 @@ As of April 20, 2026, the `grade.sh` script has been modified to automatically g
 # Grade a specific lab
 ./grade.sh lab3
 
+# Grade a specific lab and print mismatched output diffs
+./grade.sh --debug-diff lab3
+
 # Grade all shared-grader labs
 ./grade.sh
 
@@ -41,6 +44,7 @@ As of April 20, 2026, the `grade.sh` script has been modified to automatically g
 
 - **Consistency**: Single grading script for all labs.
 - **Content-Based Comparison**: Extra spaces and blank lines do not change the grade.
+- **Debugging Support**: `--debug-diff` prints a unified diff when student output does not match the teacher output.
 - **Automation**: No manual generation of expected outputs required.
 - **Error Prevention**: Handles missing `.out` files gracefully by generating them from standards.
 - **Maintainability**: Removes duplication of grading logic across labs.
