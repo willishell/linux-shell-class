@@ -244,7 +244,8 @@ grade_lab() {
                     expected_file="$lab_dir/test_cases/${task}.out"
                     if [ -f "$input_file" ] && [ -f "$expected_file" ]; then
                         output_file=$(mktemp)
-                        if run_script_with_input "$script" "$input_file" "$output_file" "$timeout_value" "$student_lab" && compare_outputs "$output_file" "$expected_file" "$lab_name/$task student=$student_id"; then
+                        run_script_with_input "$script" "$input_file" "$output_file" "$timeout_value" "$student_lab" || true
+                        if compare_outputs "$output_file" "$expected_file" "$lab_name/$task student=$student_id"; then
                             task_score=1
                         fi
                         rm -f "$output_file"
