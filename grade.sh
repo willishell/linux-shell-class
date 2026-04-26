@@ -8,11 +8,12 @@ usage() {
     cat <<EOF
 Usage: $0 [lab_dir_or_name] [student_id_file.csv]
 
-Grade a lab from the project root without using any lab subdirectory grade.sh.
+Grade labs from the project root without using lab2+/grade.sh scripts.
+- lab1 is not supported by this shared grader.
 - If lab_dir_or_name is provided, grades only that lab.
 - If student_id_file.csv is provided, uses only that CSV file.
 - If no id file is provided, uses all CSV files from id/.
-- If no lab is provided, grades every lab under the root.
+- If no lab is provided, grades every supported lab under the root.
 EOF
     exit 1
 }
@@ -53,11 +54,54 @@ fi
 
 shopt -s nullglob
 
+build_diff_args() {
+    if [ -n "${DIFF_OPTS:-}" ]; then
+        read -r -a diff_args <<< "$DIFF_OPTS"
+    else
+        diff_args=(-w -B)
+    fi
+}
+
+compare_outputs() {
+    local actual_file="$1"
+    local expected_file="$2"
+
+    diff "${diff_args[@]}" "$actual_file" "$expected_file" >/dev/null
+}
+
+run_script_with_input() {
+    local script_path="$1"
+    local input_file="$2"
+    local output_file="$3"
+    local timeout_value="$4"
+    local working_dir="$5"
+
+    (
+        cd "$working_dir"
+        timeout "$timeout_value" bash "$script_path" < "$input_file" > "$output_file" 2>/dev/null
+    )
+}
+
+ensure_supported_lab() {
+    local lab_name="$1"
+
+    if [ "$lab_name" = "lab1" ]; then
+        echo "Error: lab1 is not supported by the shared grader." >&2
+        return 1
+    fi
+
+    return 0
+}
+
 grade_lab() {
     local lab_dir="$1"
     local lab_name lab_number
     lab_name=$(basename "$lab_dir")
     lab_number=${lab_name#lab}
+
+    if ! ensure_supported_lab "$lab_name"; then
+        return
+    fi
 
     echo "=== Grading $lab_name ==="
 
@@ -77,6 +121,8 @@ grade_lab() {
         timeout_value=5
     fi
 
+    build_diff_args
+
     local teacher_dir="$lab_dir/submissions/teacher"
     if [ -d "$teacher_dir" ]; then
         echo "Generating standard answers from teacher scripts..."
@@ -92,13 +138,8 @@ grade_lab() {
                 echo "Warning: input file $input_file not found, skipping generation for $task." >&2
                 continue
             fi
-            timeout "$timeout_value" bash "$teacher_script" < "$input_file" > "$expected_file" 2>/dev/null
+            run_script_with_input "$teacher_script" "$input_file" "$expected_file" "$timeout_value" "$lab_dir"
         done
-    fi
-
-    local is_weighted=0
-    if [ -n "${WEIGHTS:-}" ]; then
-        is_weighted=1
     fi
 
     local csv_files=()
@@ -153,61 +194,27 @@ grade_lab() {
 
                 if [ -f "$script" ]; then
                     local input_file expected_file output_file
-                    if [ "$is_weighted" -eq 1 ]; then
-                        local passed=0
-                        local total=0
-                        for input_file in "$lab_dir/test_cases/${task}"_*.in; do
-                            expected_file="${input_file%.in}.out"
-                            if [ ! -f "$expected_file" ]; then
-                                continue
-                            fi
-                            total=$((total + 1))
-                            output_file=$(mktemp)
-                            if timeout "$timeout_value" bash "$script" < "$input_file" > "$output_file" 2>/dev/null && diff -q "$output_file" "$expected_file" >/dev/null; then
-                                passed=$((passed + 1))
-                            fi
-                            rm -f "$output_file"
-                        done
-                        if [ "$total" -gt 0 ]; then
-                            task_score=$((100 * passed / total))
-                        else
-                            task_score=0
+                    input_file="$lab_dir/test_cases/${task}.in"
+                    expected_file="$lab_dir/test_cases/${task}.out"
+                    if [ -f "$input_file" ] && [ -f "$expected_file" ]; then
+                        output_file=$(mktemp)
+                        if run_script_with_input "$script" "$input_file" "$output_file" "$timeout_value" "$student_lab" && compare_outputs "$output_file" "$expected_file"; then
+                            task_score=1
                         fi
-                    else
-                        input_file="$lab_dir/test_cases/${task}.in"
-                        expected_file="$lab_dir/test_cases/${task}.out"
-                        if [ -f "$input_file" ] && [ -f "$expected_file" ]; then
-                            output_file=$(mktemp)
-                            if timeout "$timeout_value" bash "$script" < "$input_file" > "$output_file" 2>/dev/null && diff -q "$output_file" "$expected_file" >/dev/null; then
-                                task_score=1
-                            fi
-                            rm -f "$output_file"
-                        fi
+                        rm -f "$output_file"
                     fi
                 fi
 
-                if [ "$is_weighted" -eq 1 ]; then
-                    local weight=0
-                    if [ -n "${WEIGHTS[$task]:-}" ]; then
-                        weight=${WEIGHTS[$task]}
-                    fi
-                    total_score=$((total_score + task_score * weight / 100))
-                else
-                    total_score=$((total_score + task_score))
-                fi
+                total_score=$((total_score + task_score))
                 row+=",$task_score"
             done
 
             row+=",$total_score"
-            if [ "$is_weighted" -eq 1 ]; then
-                row+=",$total_score"
-            else
-                local percentage=0
-                if [ "$task_count" -gt 0 ]; then
-                    percentage=$((total_score * 100 / task_count))
-                fi
-                row+=",$percentage"
+            local percentage=0
+            if [ "$task_count" -gt 0 ]; then
+                percentage=$((total_score * 100 / task_count))
             fi
+            row+=",$percentage"
             echo "$row" >> "$results_file"
         done < "$class_csv"
     done
@@ -217,6 +224,7 @@ grade_lab() {
 
 lab_dirs=("$root_dir"/lab*)
 if [ -n "$lab_arg" ]; then
+    ensure_supported_lab "$(basename "$lab_arg")" || exit 1
     lab_dirs=("$root_dir/$lab_arg")
 fi
 

@@ -2,11 +2,11 @@
 
 ## Grading System
 
-The project uses a centralized grading script (`grade.sh`) located in the root directory to grade lab assignments across all labs.
+The project uses a centralized grading script (`grade.sh`) located in the root directory to grade lab2 and later labs.
 
 ### Recent Modification: Automatic Generation of Expected Outputs
 
-As of April 20, 2026, the `grade.sh` script has been modified to automatically generate missing expected output files (`taskN.out`) from standard teacher implementations when grading a lab. This eliminates the need for individual `grade.sh` scripts in each lab directory and ensures consistency.
+As of April 20, 2026, the `grade.sh` script has been modified to automatically generate missing expected output files (`taskN.out`) from standard teacher implementations when grading a lab. This eliminates the need for individual `grade.sh` scripts in lab2 and later directories and ensures consistency.
 
 #### How It Works
 
@@ -20,8 +20,8 @@ As of April 20, 2026, the `grade.sh` script has been modified to automatically g
    - Save the output to `taskN.out`.
 
 4. **Grading Process**:
-   - The script compares student submissions against the expected outputs.
-   - Supports both binary (pass/fail) and weighted scoring based on `config.sh`.
+   - The script compares student submissions against the expected outputs while ignoring extra blank lines and whitespace-only formatting differences.
+   - Uses binary (pass/fail) task scoring for the shared lab2+ workflow.
    - Results are saved to `labN/results/` as CSV files.
 
 #### Usage
@@ -30,7 +30,7 @@ As of April 20, 2026, the `grade.sh` script has been modified to automatically g
 # Grade a specific lab
 ./grade.sh lab3
 
-# Grade all labs
+# Grade all shared-grader labs
 ./grade.sh
 
 # Use a specific ID file
@@ -40,8 +40,9 @@ As of April 20, 2026, the `grade.sh` script has been modified to automatically g
 #### Benefits
 
 - **Consistency**: Single grading script for all labs.
+- **Content-Based Comparison**: Extra spaces and blank lines do not change the grade.
 - **Automation**: No manual generation of expected outputs required.
 - **Error Prevention**: Handles missing `.out` files gracefully by generating them from standards.
 - **Maintainability**: Removes duplication of grading logic across labs.
 
-This modification ensures that the grading system is robust and self-sufficient, relying on teacher-provided standard implementations to define correct outputs.
+Lab1 remains outside this shared workflow and keeps its own lab-specific grading script.
