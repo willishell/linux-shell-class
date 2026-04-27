@@ -124,7 +124,7 @@ run_script_with_input() {
 
     (
         cd "$working_dir"
-        timeout "$timeout_value" bash "$script_path" < "$input_file" > "$output_file" 2>/dev/null
+        timeout "$timeout_value" bash "$script_path" < "$input_file" > "$output_file" 2>/dev/null || true
     )
 }
 
