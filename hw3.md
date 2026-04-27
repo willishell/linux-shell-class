@@ -61,9 +61,16 @@ bash taskN.sh < input.txt
 
 5. DO NOT:
 
-* Use interactive input
-* Hardcode results
-* Print extra text
+	* Use interactive input
+	* Hardcode answers
+	* Print extra text such as prompts or debug logs
+
+6. Output formatting is STRICT:
+
+	* No extra spaces
+	* No extra blank lines
+	* Exact field order must be preserved
+	* Sort output where required
 
 ---
 
