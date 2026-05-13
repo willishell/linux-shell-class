@@ -1,67 +1,254 @@
-Please create hw5 directory in your root and use bash files to finish the following exercises through one or more bash scripts. It's good to write each bash file for each problem and name it with the index of problem, like 1.sh, 2.sh, etc. 
+---
 
-You need to write a correspondent test script for each problem with Bats（Bash Automated Testing System）(e.g., 1_test.bats). You can run it to verify the correctness of your answer through the following command
+# 🧪 Lab Assignment 5
+
+## A Closer Look at Processes and Resource Utilization (Chapter 8)
+
+---
+
+## 🎯 Objective
+
+By completing this lab, you will learn how to:
+
+* Query memory configuration and system paging details
+* Check process priorities and scheduling indices
+* Diagnose file access issues by tracing system calls with `strace`
+* Determine file descriptors and loaded shared libraries for user processes using `lsof`
+* Analyze if running commands are multithreaded
+* Measure and report physical system memory
+* Script deterministic tests using Chapter 8 system tools
+
+---
+
+## 📁 Lab Setup
+
+Create your lab directory:
+
 ```bash
-$bats 1_test.bats
-```
-For the usage of Bats, you can read the [text](https://github.com/LeeWilli/linux-shell-class/blob/main/Bats.md).
-
-The problems are the following:
-
-1. Given a text file containing a program's source code, extract all function names and their corresponding parameters using regular expressions. The function names should be preceded by the keyword "function" and should be followed by an opening parenthesis "(".
-
-Example Input (input.txt):
-```
-function add(a, b) {
-    return a + b;
-}
-
-function multiply(x, y, z) {
-    return x * y * z;
-}
-
-function subtract(a, b) {
-    return a - b;
-}
-```
-Expected Output:
-```
-add(a, b)
-multiply(x, y, z)
-subtract(a, b)
+mkdir -p ~/labs/lab5
+cd ~/labs/lab5
 ```
 
-2. Given a text file containing a list of sentences, reverse the order of words in each sentence using sed.
+---
 
-Example Input (input.txt):
+## ⚠️ General Requirements (VERY IMPORTANT)
+
+You MUST follow all rules below:
+
+1. **File names (strict):**
+   ```
+   task1.sh
+   task2.sh
+   task3.sh
+   task4.sh
+   task5.sh
+   task6.sh
+   task7.sh
+   ```
+
+2. Each task must be:
+   * A **separate script**
+   * **Executable** (`chmod +x taskN.sh`)
+
+3. Scripts must run as:
+   ```bash
+   bash taskN.sh < input.txt
+   ```
+
+4. Scripts MUST:
+   * Read input from **stdin** (where applicable)
+   * Write output to **stdout**
+
+5. DO NOT:
+   * Use interactive input
+   * Hardcode answers
+   * Print extra text such as prompts or debug logs
+
+6. Output formatting is STRICT:
+   * No extra spaces
+   * No extra blank lines
+   * Exact field order must be preserved
+
+---
+
+## 📝 Assignment Tasks
+
+---
+
+### ✅ Task 1 — System Page Size
+
+#### Input:
+(Input text should be ignored)
+
+#### Task:
+Retrieve the memory page size used by the system kernel. Use `getconf PAGE_SIZE`.
+
+#### Output:
+Print a single number representing the page size in bytes.
+
+#### Example:
 ```
-This is the first sentence.
-Here is another sentence.
-One more sentence for testing.
-```
-Expected Output:
-```
-sentence first the is This.
-sentence another is Here.
-testing. for sentence more One
+4096
 ```
 
-3. Given a text file containing a list of employee records (name, department, salary), calculate the average salary for each department and print the department names and their average salaries using awk. The file has the following format: <name>,<department>,<salary>
+---
 
-Example Input (input.txt):
+### ✅ Task 2 — Check Process Priority (Nice Value)
+
+#### Input:
+Multiple process command names, one per line:
 ```
-John,IT,5000
-Jane,HR,6000
-Smith,IT,4500
-Emily,Marketing,7000
-David,HR,5500
-Lisa,Marketing,8000
-```
-Expected Output:
-```
-IT,4750
-HR,5750
-Marketing,7500
+systemd
+cron
+sshd
 ```
 
-4. Find online data HTML data that can be read from /home/wangli/newclassroom/code/linux-shell-class/tables.html in our server. Find the min and max of one column in a single command, and the sum of the difference between the two columns in another.
+#### Task:
+For each command name:
+* Find the matching process with the lowest PID using `ps -C <command>`.
+* Extract its NI (nice) value.
+* If multiple processes exist, only consider the lowest PID.
+* If no process matches the command, print `NOTFOUND` after the command name.
+
+#### Output:
+```
+<command> <nice>
+<command> NOTFOUND
+```
+
+#### Example:
+```
+systemd 0
+nonexistent-daemon NOTFOUND
+```
+
+---
+
+### ✅ Task 3 — Trace Failed System Calls
+
+#### Input:
+Multiple paths to files that do not exist, one per line:
+```
+/tmp/not_a_file_123
+/etc/shadow_fake
+```
+
+#### Task:
+For each file path:
+* Use `strace -e openat cat <file>` to trace the failed attempt.
+* Capture standard error output and extract the exact error code constant (e.g. `ENOENT`) associated with the `openat` system call for that particular file.
+* If no `ENOENT` error is found, print `NO_ENOENT`.
+
+#### Output:
+```
+<filename> <ERROR_CONSTANT>
+```
+
+#### Example:
+```
+/tmp/not_a_file_123 ENOENT
+```
+
+---
+
+### ✅ Task 4 — Finding Open Shared Libraries
+
+#### Input:
+Multiple library names, one per line:
+```
+libc.so
+libtinfo.so
+libfake.so
+```
+
+#### Task:
+For each library name, use `lsof -p $$` to determine if your current `bash` process (the one running the script) has loaded this library. 
+* Note: `$$` represents the current script's PID.
+* Search for the exact library name in the `lsof` output.
+
+#### Output:
+Print one line per library in this format:
+```
+<library> <yes|no>
+```
+
+#### Example:
+```
+libc.so yes
+libfake.so no
+```
+
+---
+
+### ✅ Task 5 — Check for Multithreaded Processes
+
+#### Input:
+Multiple process command names, one per line.
+
+#### Task:
+For each command, determine whether the process with the lowest PID is single-threaded or multithreaded.
+* Find the process using `ps -C <command>`.
+* Count its threads (you can use `ps -o thcount`).
+* If thread count > 1, it is `multithreaded`. If 1, it is `single-threaded`.
+* If not found, print `NOTFOUND`.
+
+#### Output:
+```
+<command> <multithreaded|single-threaded|NOTFOUND>
+```
+
+#### Example:
+```
+rsyslogd multithreaded
+bash single-threaded
+fake-daemon NOTFOUND
+```
+
+---
+
+### ✅ Task 6 — Overall System Physical Memory
+
+#### Input:
+(Input text should be ignored)
+
+#### Task:
+Use the `free -k` command to find the total kilobytes of physical memory (`Mem:`) on the system.
+* Extract just the numeric value for "total".
+
+#### Output:
+Print the total memory in kilobytes (a single number on its own line).
+
+#### Example:
+```
+16234512
+```
+
+---
+
+### ✅ Task 7 — Find the User Running a Process
+
+#### Input:
+Multiple process command names, one per line:
+```
+systemd
+cron
+sshd
+```
+
+#### Task:
+For each command name:
+* Find the matching process with the lowest PID using `ps -C <command>`.
+* Extract the exact user (`USER` column) running that process.
+* If multiple processes exist, only consider the lowest PID.
+* If no process matches the command, print `NOTFOUND` after the command name.
+
+#### Output:
+```
+<command> <USER>
+```
+
+#### Example:
+```
+systemd root
+fake-daemon NOTFOUND
+```

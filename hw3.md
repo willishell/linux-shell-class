@@ -122,6 +122,7 @@ Device paths:
 
 * Use `lsblk -f -n -o NAME,FSTYPE`
 * Extract filesystem type
+* Skip the device if non existed.
 
 #### Output:
 

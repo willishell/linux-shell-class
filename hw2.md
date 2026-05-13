@@ -188,7 +188,7 @@ output.bin
 
 #### Task:
 
-* Create a file(output.bin) using:
+* Create a file(/tmp/output.bin) using:
   * input: /dev/zero
   * size: 1 KB
 * After creation, output:
