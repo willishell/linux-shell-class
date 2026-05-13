@@ -211,6 +211,13 @@ grade_lab() {
 
     echo "Grading student scripts..."
 
+    local wrong_counts=()
+    local total_students=0
+    local task_index
+    for task_index in "${!TASKS[@]}"; do
+        wrong_counts[$task_index]=0
+    done
+
     for class_csv in "${csv_files[@]}"; do
         local class_name
         class_name=$(basename "$class_csv" .csv)
@@ -232,8 +239,10 @@ grade_lab() {
             local row="$student_id,$student_name"
             local total_score=0
             local task_count=0
+            total_students=$((total_students + 1))
 
-            for task in "${TASKS[@]}"; do
+            for task_index in "${!TASKS[@]}"; do
+                local task="${TASKS[$task_index]}"
                 task_count=$((task_count + 1))
                 local script="$student_lab/$task.sh"
                 local task_score=0
@@ -252,6 +261,10 @@ grade_lab() {
                     fi
                 fi
 
+                if [ "$task_score" -eq 0 ]; then
+                    wrong_counts[$task_index]=$((wrong_counts[$task_index] + 1))
+                fi
+
                 total_score=$((total_score + task_score))
                 row+=",$task_score"
             done
@@ -266,6 +279,27 @@ grade_lab() {
         done < "$class_csv"
     done
 
+    local wrong_stats_file="$results_dir/${lab_name}_wrong_stats.csv"
+    local wrong_stats_tmp
+    wrong_stats_tmp=$(mktemp)
+    for task_index in "${!TASKS[@]}"; do
+        local task="${TASKS[$task_index]}"
+        local wrong_count="${wrong_counts[$task_index]}"
+        echo "$task,$wrong_count,$total_students" >> "$wrong_stats_tmp"
+    done
+
+    {
+        echo "task,wrong_count,total_students"
+        sort -t, -k2,2nr -k1,1 "$wrong_stats_tmp"
+    } > "$wrong_stats_file"
+    rm -f "$wrong_stats_tmp"
+
+    echo "Wrong answer statistics for $lab_name:"
+    if command -v column >/dev/null 2>&1; then
+        column -s, -t "$wrong_stats_file"
+    else
+        cat "$wrong_stats_file"
+    fi
     echo "Saved results to $results_dir."
 }
 
